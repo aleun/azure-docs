@@ -26,7 +26,7 @@ You will complete the following tasks:
 
 ## Prerequisites
 
-* A PC running Microsoft Windows 10
+* A PC running Linux or Microsoft Windows 10
 * [Git](https://git-scm.com/downloads) for cloning the repository
 * Hardware
 
@@ -48,28 +48,130 @@ To clone the repo, run the following command:
 git clone --recursive https://github.com/azure-rtos/getting-started.git
 ```
 
-### Install the tools
-
-The cloned repo contains a setup script that installs and configures the required tools. If you installed these tools in another embedded device quickstart, you don't need to do it again.
+### Install the tools on Windows
 
 > [!NOTE]
-> The setup script installs the following tools:
+> Following the instructions in this section will install the following tools:
+> * [Cella](#): Package Manager
 > * [CMake](https://cmake.org): Build
 > * [ARM GCC](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm): Compile
+> * [OpenOCD](https://github.com/microsoft/openocd): Debug
 > * [Termite](https://www.compuphase.com/software_termite.htm): Monitor serial port output for connected devices
 
-To install the tools:
+#### Using PowerShell
 
-1. From File Explorer, navigate to the following path in the repo and run the setup script named *get-toolchain.bat*:
+1. Open an Administrator PowerShell terminal and enable execution of PowerShell scripts:
 
-    > *getting-started\tools\get-toolchain.bat*
+    ```shell
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
+    ```
 
-1. After the installation, open a new console window to recognize the configuration changes made by the setup script. Use this console to complete the remaining programming tasks in the quickstart. You can use Windows CMD, PowerShell, or Git Bash for Windows.
-1. Run the following code to confirm that CMake version 3.14 or later is installed.
+1. Open a new PowerShell terminal.
+
+1. Navigate to the following path in the repo:
+
+    > *getting-started\STMicroelectronics\STM32L4_L4+*
+
+1. Install Cella
+
+    ```shell
+    iex (iwr -useb aka.ms/cella.ps1)
+    ```
+
+1. Download, install, and activate the tools:
+
+    ```shell
+    cella update; cella activate
+    ```
+
+1. Run the following code to confirm that CMake version 3.20 or later is installed:
 
     ```shell
     cmake --version
     ```
+
+1. Use this terminal to complete the remaining programming tasks in the quickstart.
+
+> [!NOTE]
+> To activate these tools in any new PowerShell terminals you create, run `~/.cella/cella.ps1 activate` from the project folder.
+
+#### Using Windows CMD
+
+1. Open a new Windows CMD terminal.
+
+1. Navigate to the following path in the repo:
+
+    > *getting-started\STMicroelectronics\STM32L4_L4+*
+
+1. Install Cella
+
+    ```shell
+    curl -L aka.ms/cella.cmd -o cella.cmd && cella.cmd
+    ```
+
+1. Download, install, and activate the tools:
+
+    ```shell
+    cella update && cella activate
+    ```
+
+1. Run the following code to confirm that CMake version 3.20 or later is installed:
+
+    ```shell
+    cmake --version
+    ```
+
+1. Use this terminal to complete the remaining programming tasks in the quickstart.
+
+> [!NOTE]
+> To activate these tools in any new CMD terminals you create, run `%userprofile%\.cella\cella.cmd` from the project folder.
+
+#### Install the tools on Linux
+
+> [!NOTE]
+> Following the instructions in this section will install the following tools:
+> * [Cella](#): Package Manager
+> * [CMake](https://cmake.org): Build
+> * [ARM GCC](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm): Compile
+> * [OpenOCD](https://github.com/microsoft/openocd): Debug
+> * [screen](https://www.gnu.org/software/screen/): Monitor serial port output for connected devices
+> * [curl](https://curl.se/): Network download utility
+> * [libncurses5](https://invisible-island.net/ncurses/): Textual UI library used by ARM GCC
+
+To install the tools:
+
+1. Open a new `bash` terminal.
+
+1. Navigate to the following path in the repo:
+
+    > *getting-started\STMicroelectronics\STM32L4_L4+*
+
+1. Install `screen`, `curl`, and `libncurses` using your package manager.
+    > For example, on Ubuntu, run `sudo apt install screen curl libncurses5`. On Fedora, run `sudo yum install screen curl libncurses5`.
+  
+1. Install Cella
+
+    ```shell
+    . <(curl aka.ms/cella.sh -L )
+    ```
+
+1. Download, install, and activate the tools:
+
+    ```shell
+    cella update && cella activate
+    ```
+
+1. Run the following code to confirm that CMake version 3.20 or later is installed:
+
+    ```shell
+    cmake --version
+    ```
+
+1. Use this terminal to complete the remaining programming tasks in the quickstart.
+
+> [!NOTE]
+> To activate these tools in any new terminals you create, run `. ~/.cella/cella activate` from the project folder.
+
 [!INCLUDE [iot-develop-embedded-create-central-app-with-device](../../includes/iot-develop-embedded-create-central-app-with-device.md)]
 
 ## Prepare the device
@@ -102,9 +204,12 @@ To connect the STM DevKit to Azure, you'll modify a configuration file for Wi-Fi
 
 ### Build the image
 
-In your console or in File Explorer, run the script *rebuild.bat* at the following path to build the image:
+In your terminal, run the following commands to build the image:
 
-> *getting-started\STMicroelectronics\STM32L4_L4+\tools\rebuild.bat*
+```shell
+cmake -Bbuild -GNinja -DCMAKE_TOOLCHAIN_FILE="../../cmake/arm-gcc-cortex-m4.cmake"
+cmake --build build
+```
 
 After the build completes, confirm that two binary files were created. There's a binary image for each STM Devkit. The build saves the images to the following paths:
 
@@ -123,22 +228,27 @@ After the build completes, confirm that two binary files were created. There's a
     > [!NOTE]
     > For detailed setup information about the STM DevKit, see the instructions on the packaging, or see [B-L475E-IOT01A Resources](https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html#resource) or [B-L4S5I-IOT01A Resources](https://www.st.com/en/evaluation-tools/b-l4s5i-iot01a.html#resource).
 
-1. In File Explorer, find the binary files that you created in the previous section.
+1. In your file manager, find the binary files that you created in the previous section.
 
 1. Copy the binary file whose file name corresponds to the part number of the STM Devkit you're using. For example, if your board part number is **B-L475E-IOT01A1**, copy the binary file named *stm32l475_azure_iot.bin*.
 
-1. In File Explorer, find the STM Devkit that's connected to your computer. The device appears as a drive on your system with the drive label **DIS_L4IOT**.
+1. In your file manager, find the STM Devkit that's connected to your computer. The device appears as a drive on your system with the drive label **DIS_L4IOT**.
 
 1. Paste the binary file into the root folder of the STM Devkit. Flashing starts automatically and completes in a few seconds.
 
     > [!NOTE]
     > During the flashing process, a LED toggles between red and green on the STM DevKit.
 
-### Confirm device connection details
+### Confirm device connection details using Termite
 
-You can use the **Termite** app to monitor communication and confirm that your device is set up correctly.
+On Windows, you can use the **Termite** app to monitor communication and confirm that your device is set up correctly.
 
 1. Start **Termite**.
+
+    ```shell
+    termite
+    ```
+
     > [!TIP]
     > If you are unable to connect Termite to your devkit, install the [ST-LINK driver](https://my.st.com/content/ccc/resource/technical/software/driver/files/stsw-link009.zip) and try again. See  [Troubleshooting](https://github.com/azure-rtos/getting-started/blob/master/docs/troubleshooting.md) for additional steps.
 1. Select **Settings**.
@@ -196,6 +306,66 @@ You can use the **Termite** app to monitor communication and confirm that your d
 
 Keep Termite open to monitor device output in the following steps.
 
+### Confirm device connection details using screen
+
+On Linux, you can use the `screen` utility to monitor communication and confirm that your device is set up correctly.
+
+1. Start `screen`. The path to the device may differ on your system. Run the following command to list the available devices by id: `ls -l /dev/serial/by-id`
+
+    ```shell
+    sudo screen /dev/ttyACM0 115200
+    ```
+
+    > [!TIP]
+    > If you are unable to connect `screen` to your devkit, install the [ST-LINK driver](https://my.st.com/content/ccc/resource/technical/software/driver/files/stsw-link009.zip) and try again. See  [Troubleshooting](https://github.com/azure-rtos/getting-started/blob/master/docs/troubleshooting.md) for additional steps.
+
+1. Press the **Reset** button on the device. The button is labeled on the device and located near the Micro USB connector.
+
+1. Check that `screen` outputs the following checkpoint values to confirm that the device is initialized and connected to Azure IoT.
+
+    ```output
+    Starting Azure thread
+
+    Initializing WiFi
+    	Module: ISM43362-M3G-L44-SPI
+	    MAC address: C4:7F:51:8F:67:F6
+    	Firmware revision: C3.5.2.5.STM
+	    Connecting to SSID 'iot'
+    SUCCESS: WiFi connected to iot
+
+    Initializing DHCP
+	    IP address: 192.168.0.22
+	    Gateway: 192.168.0.1
+    SUCCESS: DHCP initialized
+
+    Initializing DNS client
+	    DNS address: 75.75.75.75
+    SUCCESS: DNS client initialized
+
+    Initializing SNTP client
+    	SNTP server 0.pool.ntp.org
+	    SNTP IP address: 108.62.122.57
+	    SNTP time update: May 21, 2021 22:42:8.394 UTC 
+    SUCCESS: SNTP initialized
+
+    Initializing Azure IoT DPS client
+	    DPS endpoint: global.azure-devices-provisioning.net
+	    DPS ID scope: ***
+	    Registration ID: mydevice
+    SUCCESS: Azure IoT DPS client initialized
+
+    Initializing Azure IoT Hub client
+	    Hub hostname: ***.azure-devices.net
+	    Device id: mydevice
+	    Model id: dtmi:azurertos:devkit:gsg;1
+    Connected to IoT Hub
+    SUCCESS: Azure IoT Hub client initialized
+    ```
+    > [!IMPORTANT]
+    > If the DNS client initialization fails and notifies you that the Wi-Fi firmware is out of date, you'll need to update the Wi-Fi module firmware. Download and install the [Inventek ISM 43362 Wi-Fi module firmware update](https://www.st.com/resource/en/utilities/inventek_fw_updater.zip). Then press the **Reset** button on the device to recheck your connection, and continue with this quickstart. This utility must be run from a PC running Windows 10.
+    
+Keep `screen` running to monitor device output in the following steps.
+    
 ## Verify the device status
 
 To view the device status in IoT Central portal:
@@ -245,7 +415,7 @@ Select **About** tab from the device page.
 
 If you experience issues building the device code, flashing the device, or connecting, see [Troubleshooting](https://github.com/azure-rtos/getting-started/blob/master/docs/troubleshooting.md).
 
-For debugging the application, see [Debugging with Visual Studio Code](https://github.com/azure-rtos/getting-started/blob/master/docs/debugging.md).
+For debugging the application, see [Using Visual Studio Code with the STMicroelectronics B-L4S5I-IOTOA1 Discovery Kit](https://github.com/azure-rtos/getting-started/blob/master/STMicroelectronics/STM32L4_L4+/vscode.md).
 
 ## Clean up resources
 
